@@ -105,12 +105,12 @@ Of the stations that serve the A train, `r nrow(a_train_ada_stations)` are ADA c
 
 # Problem 2
 
-## Read and clean the Mr. Trash Wheel sheet
+*   specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in read_excel.
+*   use reasonable variable names.
+*   omit rows that do not include dumpster-specific data.
+*   round the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer).
 
-*   specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in read_excel
-*   use reasonable variable names
-*   omit rows that do not include dumpster-specific data
-*   round the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer)
+## Read and clean the Mr. Trash Wheel sheet
 
 ```{r}
 mr_trash_wheel = 
@@ -159,27 +159,92 @@ The total number of sports balls collected by Mr. Trash Wheel in 2020 is `r sum(
 
 # Problem 3
 
+*   Use separate() to break up the variable mon into integer variables year, month, and day.
+*   replace month number with month name.
+*   create a president variable taking values gop and dem, and remove prez_dem and prez_gop.
+*   remove the day variable.
+*   arrange according to year and month.
+*   make sure year and month are the leading columns.
+
 ## clean the data in pols-month.csv
 
 ```{r}
-mr_trash_wheel = 
-  mutate(mr_trash_wheel, trash_wheel_type = 'Mr')
-
-professor_trash_wheel = 
-  mutate(professor_trash_wheel, trash_wheel_type = 'Professor')
-
-trash_wheels = 
-  rbind(mr_trash_wheel, professor_trash_wheel)
+pols_month = 
+  read_csv(file = 'data/fivethirtyeight_datasets/pols-month.csv') %>% 
+  janitor::clean_names() %>% 
+  separate(mon, c('year', 'month', 'day'), convert = TRUE) %>% 
+  mutate(month = month.name[month],
+         president = if_else(prez_dem == 1, 'dem', 'gop')) %>% 
+  select(-prez_dem, -prez_gop, -day) %>% 
+  arrange(year, month) %>% 
+  relocate(year, month)
 ```
 
-First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 
-Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+## clean the data in snp.csv 
 
-Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+```{r}
+snp = 
+  read_csv(file = 'data/fivethirtyeight_datasets/snp.csv') %>% 
+  janitor::clean_names() %>% 
+  separate(date, c('month', 'day', 'year'), convert = TRUE) %>% 
+  mutate(month = month.name[month],
+         year = if_else(year >22 , year+1900, year+2000)) %>% 
+  select(-day) %>% 
+  arrange(year, month) %>% 
+  relocate(year, month)
+```
 
-Join the datasets by merging snp into pols, and merging unemployment into the result.
+## tidy the unemployment data 
 
-Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
+```{r}
+unemployment = 
+  read_csv(file = 'data/fivethirtyeight_datasets/unemployment.csv') %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(jan:dec, 
+               names_to = "month",
+               values_to = "unemployment_pct") %>% 
+  mutate(month = month.name[match(str_to_title(month), month.abb)]) %>% 
+  arrange(year, month) %>% 
+  relocate(year, month)
+```
 
-Note: we could have used a date variable as a key instead of creating year and month keys; doing so would help with some kinds of plotting, and be a more accurate representation of the data. Date formats are tricky, though. For more information check out the lubridate package in the tidyverse.
+## Join the datasets 
+
+```{r}
+five_thirty_eight = 
+  left_join(pols_month, snp, by = c("year", "month")) %>% 
+  left_join(unemployment, by = c("year", "month"))
+```
+
+## Brief description
+
+### pols-month
+The pols-month dataset contains `r ncol(pols_month)` variables and `r nrow(pols_month)` records.
+
+The variables in pols-month dataset include:
+`r colnames(pols_month)`
+
+This data set tells us information about national politicians from `r slice(pols_month,1)[1:2]` to `r slice(pols_month,nrow(pols_month))[1:2]`
+
+### snp
+
+The snp dataset contains `r ncol(snp)` variables and `r nrow(snp)` records.
+
+This data set tells us closing values of the S&P stock index from `r slice(snp,1)[1:2]` to `r slice(snp,nrow(snp))[1:2]`
+
+### unemployment
+
+The unemployment dataset contains `r ncol(unemployment)` variables and `r nrow(unemployment)` records.
+
+This data set tells us percentage of unemployment from `r slice(unemployment,1)[1:2]` to `r slice(unemployment,nrow(unemployment))[1:2]`
+
+### resulting dataset
+
+The resulting dataset contains `r ncol(five_thirty_eight)` variables and `r nrow(five_thirty_eight)` records.
+
+The variables include:
+`r colnames(five_thirty_eight)`
+
+This data set tells us information about national politicians, closing values of the S&P stock index and percentage of unemployment from `r slice(five_thirty_eight, 1)[1:2]` to `r slice(five_thirty_eight, nrow(five_thirty_eight))[1:2]`
+
