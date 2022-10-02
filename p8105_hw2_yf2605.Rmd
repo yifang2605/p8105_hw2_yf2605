@@ -9,10 +9,12 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(readxl)
 ```
 
-# Problem 1 Read and clean the data
+# Problem 1 
 
+## Read and clean the data
 
 ```{r}
 entrance_exit_raw = 
@@ -40,16 +42,17 @@ Data cleaning steps:
 *   retained variables: `r colnames(entrance_exit_cleaned)`. 
 *   converted variable `entry` from character to a logical variable, YES-->TRUE, NO-->FALSE.
 
-The size of the resulting dataset is (r x c): `r nrow(entrance_exit_cleaned)` x `r ncol(entrance_exit_cleaned)`. 
+The size of the resulting dataset is (row x column): `r nrow(entrance_exit_cleaned)` x `r ncol(entrance_exit_cleaned)`. 
 
 These datasets are not tidy.
 
-## Answer the following questions using these data
+## Questions
 
 *   How many distinct stations are there?
 
 ```{r}
-stations = distinct(entrance_exit_cleaned, line, station_name, .keep_all = TRUE)
+stations = 
+  distinct(entrance_exit_cleaned, line, station_name, .keep_all = TRUE)
 ```
 
 There are `r nrow(stations)` distinct stations.
@@ -57,7 +60,8 @@ There are `r nrow(stations)` distinct stations.
 *   How many stations are ADA compliant?
 
 ```{r}
-ada_sations = filter(stations, ada == TRUE)
+ada_sations = 
+  filter(stations, ada == TRUE)
 ```
 
 `r nrow(ada_sations)` stations are ADA compliant.
@@ -100,19 +104,60 @@ a_train_ada_stations =
 Of the stations that serve the A train, `r nrow(a_train_ada_stations)` are ADA compliant.
 
 # Problem 2
-This problem uses the Mr. Trash Wheel dataset, available as an Excel file on the course website.
 
-Read and clean the Mr. Trash Wheel sheet:
+## Read and clean the Mr. Trash Wheel sheet
 
-specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in read_excel
-use reasonable variable names
-omit rows that do not include dumpster-specific data
-round the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer)
-Use a similar process to import, clean, and organize the data for Professor Trash Wheel, and combine this with the Mr. Trash Wheel dataset to produce a single tidy dataset. To keep track of which Trash Wheel is which, you may need to add an additional variable to both datasets before combining.
+*   specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in read_excel
+*   use reasonable variable names
+*   omit rows that do not include dumpster-specific data
+*   round the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer)
 
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in the resulting dataset, and give examples of key variables. For available data, what was the total weight of trash collected by Professor Trash Wheel? What was the total number of sports balls collected by Mr. Trash Wheel in 2020?
+```{r}
+mr_trash_wheel = 
+  read_excel(path = 'data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx',
+             sheet = 'Mr. Trash Wheel',
+             range = "A2:N534") %>% 
+  janitor::clean_names() %>% 
+  drop_na(dumpster) %>% 
+  mutate(sports_balls = as.integer(round(sports_balls)))
+```
 
-Problem 3
+## Read and clean the Professor Trash Wheel sheet
+
+```{r}
+professor_trash_wheel = 
+  read_excel(path = 'data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx',
+             sheet = 'Professor Trash Wheel',
+             range = "A2:N116") %>% 
+  janitor::clean_names() %>% 
+  drop_na(dumpster) %>% 
+  mutate(sports_balls = as.integer(round(sports_balls)))
+```
+
+## Combine Mr. Trash Wheel and Professor Trash Wheel
+
+```{r}
+mr_trash_wheel = 
+  mutate(mr_trash_wheel, trash_wheel_type = 'Mr')
+
+professor_trash_wheel = 
+  mutate(professor_trash_wheel, trash_wheel_type = 'Professor')
+
+trash_wheels = 
+  rbind(mr_trash_wheel, professor_trash_wheel)
+```
+
+## Brief description
+
+The dataset contains `r ncol(trash_wheels)` variables and `r nrow(trash_wheels)` records,  `r nrow(mr_trash_wheel)` records are from Mr. Trash Wheel and `r nrow(professor_trash_wheel)` records are from professor_trash_wheel.
+
+The variables include:
+`r colnames(trash_wheels)`
+
+The the total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_wheel$weight_tons)` tons
+The total number of sports balls collected by Mr. Trash Wheel in 2020 is `r sum(filter(mr_trash_wheel, year == 2020)$sports_balls)`.
+
+# Problem 3
 This problem uses the FiveThirtyEight data; these data were gathered to create the interactive graphic on this page. In particular, we’ll use the data in pols-month.csv, unemployment.csv, and snp.csv. Our goal is to merge these into a single data frame using year and month as keys across datasets.
 
 First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
