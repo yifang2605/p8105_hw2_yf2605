@@ -28,13 +28,13 @@ entrance_exit_cleaned =
   janitor::clean_names(entrance_exit_raw) %>% 
   select(line, station_name, station_latitude, 
          station_longitude, starts_with("route"), 
-         entry, vending, entrance_type, ada) %>% 
+         entry, exit_only, vending, entrance_type, ada) %>% 
   mutate(entry = recode(entry, "YES" = TRUE, "NO" = FALSE))
 ```
 
 ## Brief description
 
-The dataset contains `r ncol(entrance_exit_raw)` variables: `r colnames(entrance_exit_raw)`. 
+The original dataset contains `r ncol(entrance_exit_raw)` variables: `r colnames(entrance_exit_raw)`. 
 
 Data cleaning steps: 
 
@@ -158,7 +158,19 @@ The the total weight of trash collected by Professor Trash Wheel is `r sum(profe
 The total number of sports balls collected by Mr. Trash Wheel in 2020 is `r sum(filter(mr_trash_wheel, year == 2020)$sports_balls)`.
 
 # Problem 3
-This problem uses the FiveThirtyEight data; these data were gathered to create the interactive graphic on this page. In particular, we’ll use the data in pols-month.csv, unemployment.csv, and snp.csv. Our goal is to merge these into a single data frame using year and month as keys across datasets.
+
+## clean the data in pols-month.csv
+
+```{r}
+mr_trash_wheel = 
+  mutate(mr_trash_wheel, trash_wheel_type = 'Mr')
+
+professor_trash_wheel = 
+  mutate(professor_trash_wheel, trash_wheel_type = 'Professor')
+
+trash_wheels = 
+  rbind(mr_trash_wheel, professor_trash_wheel)
+```
 
 First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
 
