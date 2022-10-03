@@ -105,12 +105,11 @@ Of the stations that serve the A train, `r nrow(a_train_ada_stations)` are ADA c
 
 # Problem 2
 
-*   specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in read_excel.
-*   use reasonable variable names.
-*   omit rows that do not include dumpster-specific data.
-*   round the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer).
-
 ## Read and clean the Mr. Trash Wheel sheet
+
+*   read data entries, excluded non-data area and the grand total row.
+*   omit rows that do not include dumpster-specific data.
+*   round the number of sports balls to the nearest integer and converts the result to an integer variable.
 
 ```{r}
 mr_trash_wheel = 
@@ -124,6 +123,10 @@ mr_trash_wheel =
 
 ## Read and clean the Professor Trash Wheel sheet
 
+*   read data entries, excluded non-data area and the grand total row.
+*   omit rows that do not include dumpster-specific data.
+*   round the number of sports balls to the nearest integer and converts the result to an integer variable.
+
 ```{r}
 professor_trash_wheel = 
   read_excel(path = 'data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx',
@@ -135,6 +138,9 @@ professor_trash_wheel =
 ```
 
 ## Combine Mr. Trash Wheel and Professor Trash Wheel
+
+*   add variable trash_wheel_type to keep track of Trash Wheel Types
+*   stack mr_trash_wheel and professor_trash_wheel together
 
 ```{r}
 mr_trash_wheel = 
@@ -159,14 +165,14 @@ The total number of sports balls collected by Mr. Trash Wheel in 2020 is `r sum(
 
 # Problem 3
 
+## clean the data in pols-month.csv
+
 *   Use separate() to break up the variable mon into integer variables year, month, and day.
 *   replace month number with month name.
-*   create a president variable taking values gop and dem, and remove prez_dem and prez_gop.
-*   remove the day variable.
+*   create a president variable taking values gop and dem.
+*   remove variables: prez_dem prez_gop day.
 *   arrange according to year and month.
 *   make sure year and month are the leading columns.
-
-## clean the data in pols-month.csv
 
 ```{r}
 pols_month = 
@@ -183,6 +189,13 @@ pols_month =
 
 ## clean the data in snp.csv 
 
+*   Use separate() to break up the variable date into integer variables year, month, and day.
+*   replace month number with month name.
+*   convert the 2 digit year to 4 digit year.
+*   remove variables: day.
+*   arrange according to year and month.
+*   make sure year and month are the leading columns.
+
 ```{r}
 snp = 
   read_csv(file = 'data/fivethirtyeight_datasets/snp.csv') %>% 
@@ -197,6 +210,11 @@ snp =
 
 ## tidy the unemployment data 
 
+*   switching the unemployment data from “wide” to “long” format.
+*   replace abbreviated month name to month number and then to month name.
+*   arrange according to year and month.
+*   make sure year and month are the leading columns.
+
 ```{r}
 unemployment = 
   read_csv(file = 'data/fivethirtyeight_datasets/unemployment.csv') %>% 
@@ -210,6 +228,9 @@ unemployment =
 ```
 
 ## Join the datasets 
+
+*   Left join snp into pols_month
+*   Left join unemployment into the result.
 
 ```{r}
 five_thirty_eight = 
