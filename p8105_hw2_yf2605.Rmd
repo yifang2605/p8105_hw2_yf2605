@@ -113,28 +113,28 @@ Of the stations that serve the A train, `r nrow(a_train_ada_stations)` are ADA c
 
 ```{r}
 mr_trash_wheel = 
-  read_excel(path = 'data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx',
+  read_excel(path = 'data/Trash Wheel Collection Data.xlsx',
              sheet = 'Mr. Trash Wheel',
-             range = "A2:N534") %>% 
+             range = "A2:N549") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
-  mutate(sports_balls = as.integer(round(sports_balls)))
+  mutate(sports_balls = as.integer(sports_balls))
 ```
 
 ## Read and clean the Professor Trash Wheel sheet
 
 *   read data entries, excluded non-data area and the grand total row.
 *   omit rows that do not include dumpster-specific data.
-*   round the number of sports balls to the nearest integer and converts the result to an integer variable.
+*   add new variable: sports balls and set it to integer NA.
 
 ```{r}
 professor_trash_wheel = 
-  read_excel(path = 'data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx',
+  read_excel(path = 'data/Trash Wheel Collection Data.xlsx',
              sheet = 'Professor Trash Wheel',
-             range = "A2:N116") %>% 
+             range = "A2:M96") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
-  mutate(sports_balls = as.integer(round(sports_balls)))
+  mutate(sports_balls = as.integer(NA))
 ```
 
 ## Combine Mr. Trash Wheel and Professor Trash Wheel
